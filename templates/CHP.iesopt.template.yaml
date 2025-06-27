@@ -17,24 +17,40 @@ parameters:
   efficiency_condensing_max: ~
   efficiency_backpressure_min: ~
   efficiency_backpressure_max: ~
-  availability: ~
-  availability_factor: ~
-  # optional:
-  # ramps: ~
-  # other_unit_settings: ~
+  # availability: ~
+  # availability_factor: ~
+  # other missing parameters: ramping, specific unit commitment settings, etc.
+  _eta_h: ~
+  _turbine_outputs: ~
+  _turbine_conversion_out: ~
 
 components:
-  power:
+  turbine:
     type: Unit
-    enabled: <mode> == extraction
+    inputs: {<fuel>: <fuel_from>}
+    outputs: <_turbine_outputs>
+    conversion: <_turbine_conversion>
+    capacity: <power_max> out:electricity
   
   heat:
     type: Unit
     enabled: <mode> == extraction
-
-  combined:
-    type: Unit
-    enabled: <mode> != extraction
+    inputs: {electricity: <self>.aux_node}
+    outputs: {heat: <heat_to>}
+    conversion: 1 electricity -> <power_loss_ratio> heat
+    capacity: <heat_max> out:heat
+  
+  aux_node:
+    type: Node
+    enabled: <mode> == extraction
+    carrier: electricity
+  
+  aux_conn:
+    type: Connection
+    enabled: <mode> == extraction
+    node_from: <self>.aux_node
+    node_to: <power_to>
+    lb: 0
 
 functions:
   validate: |
@@ -65,8 +81,11 @@ functions:
     else
         @check !isnothing(this.get("heat_to")), "Parameter `heat_to` is mandatory for extraction mode"
     end
+
   prepare: |
     nothing
   
   finalize: |
-    nothing
+    this.exp.out_electricity = 0  # TODO
+    this.exp.out_heat = 0  # TODO
+    this.exp.out_co2 = 0  # TODO
