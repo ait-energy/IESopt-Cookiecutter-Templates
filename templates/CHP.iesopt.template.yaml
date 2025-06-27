@@ -1,0 +1,36 @@
+parameters:
+  power_max: ~
+  power_at_hmax: ~
+  power_min: ~
+  heat_max: ~
+  heat_min: ~
+  power_ratio: ~
+  power_loss_ratio: ~
+  efficiency_condensing_max: ~
+  efficiency_backpressure_max: ~
+  mode: ~
+  availability: ~
+  availability_factor: ~
+  fuel: ~
+  fuel_co2_emission_factor: ~
+  fuel_in: ~
+  power_out: ~
+  heat_out: ~
+  co2_out: ~
+  # optional:
+  # efficiency_condensing_min: ~
+  # efficiency_backpressure_min: ~
+  # ramps: ~
+  # other_unit_settings: ~
+
+components: ~
+
+functions:
+  validate: |
+    nothing
+  
+  prepare: |
+    nothing
+  
+  finalize: |
+    nothing
