@@ -1,34 +1,70 @@
 parameters:
-  power_max: ~
-  power_at_hmax: ~
-  power_min: ~
-  heat_max: ~
-  heat_min: ~
-  power_ratio: ~
-  power_loss_ratio: ~
-  efficiency_condensing_max: ~
-  efficiency_backpressure_max: ~
   mode: ~
+  fuel: ~
+  fuel_co2_emission_factor: ~       # no CO2 tracking if nothing
+  fuel_from: ~
+  power_to: ~
+  heat_to: ~                        # condensing only if nothing
+  co2_to: ~                         # no CO2 tracking if nothing
+  power_min: 0
+  power_max: ~
+  heat_min: 0
+  heat_max: ~
+  power_at_heat_max: ~
+  power_ratio: 0.55
+  power_loss_ratio: 0.20
+  efficiency_condensing_min: ~
+  efficiency_condensing_max: ~
+  efficiency_backpressure_min: ~
+  efficiency_backpressure_max: ~
   availability: ~
   availability_factor: ~
-  fuel: ~
-  fuel_co2_emission_factor: ~
-  fuel_in: ~
-  power_out: ~
-  heat_out: ~
-  co2_out: ~
   # optional:
-  # efficiency_condensing_min: ~
-  # efficiency_backpressure_min: ~
   # ramps: ~
   # other_unit_settings: ~
 
-components: ~
+components:
+  power:
+    type: Unit
+    enabled: <mode> == extraction
+  
+  heat:
+    type: Unit
+    enabled: <mode> == extraction
+
+  combined:
+    type: Unit
+    enabled: <mode> != extraction
 
 functions:
   validate: |
-    nothing
-  
+    # Check mandatory parameters.
+    to_check = ["mode", "fuel", "fuel_from", "power_to"]
+    for param in to_check
+        @check !isnothing(this.get(param)), "Parameter `$(param)` is mandatory"
+    end
+
+    # Check mode.
+    @check this.get("mode") in ["extraction", "condensing", "backpressure"], "Invalid `mode`: $(this.get("mode"))"
+
+    # Check for non-negativity.
+    to_check = [
+        "power_min", "power_max", "heat_min", "heat_max", "power_at_heat_max", "power_ratio", "power_loss_ratio",
+        "efficiency_condensing_min", "efficiency_condensing_max", "efficiency_backpressure_min",
+        "efficiency_backpressure_max",
+    ]
+    for param in to_check
+        @check isnothing(param) || (this.get(param) >= 0), "Parameter `$(param)` must be non-negative"
+    end
+    
+    # Mode dependent checks.
+    if this.get("mode") == "backpressure"
+        @check !isnothing(this.get("heat_to")), "Parameter `heat_to` is mandatory for backpressure mode"
+    elseif this.get("mode") == "condensing"
+        @check isnothing(this.get("heat_to")), "Parameter `heat_to` cannot be set for condensing mode"
+    else
+        @check !isnothing(this.get("heat_to")), "Parameter `heat_to` is mandatory for extraction mode"
+    end
   prepare: |
     nothing
   
