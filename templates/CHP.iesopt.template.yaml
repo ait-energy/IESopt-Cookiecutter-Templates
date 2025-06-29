@@ -52,6 +52,9 @@ components:
     node_to: <power_to>
     lb: 0
 
+# TODO: discuss that these functions get really hard to read/maintain when they grow larger (since in a YAML)
+#       should we just default to addons?
+
 functions:
   validate: |
     # TODO: A lot of additional validation checks.
@@ -103,13 +106,16 @@ functions:
         p_max = this.get("power_max")
         h_max = this.get("heat_max")
         cm = this.get("power_ratio")
+
         if isnothing(p_max)
             power_max = cm * h_max
             this.set("power_max", power_max)
         end
+        
         if isnothing(h_max)
             # Currently, nothing to do here (`h_max` is not actively used in backpressure mode).
         end
+        
         if isnothing(cm)
             cm = p_max / h_max
             this.set("power_ratio", cm)
@@ -139,18 +145,22 @@ functions:
         p_at_h_max = this.get("power_at_heat_max")
         cm = this.get("power_ratio")
         cv = this.get("power_loss_ratio")
+        
         if isnothing(p_max)
             p_max = isnothing(p_at_h_max) ? (cm * h_max + cv * h_max) : (p_at_h_max + cv * h_max)
             this.set("power_max", p_max)
         end
+        
         if isnothing(h_max)
             h_max = isnothing(p_at_h_max) ? (p_max / (cm + cv)) : (p_at_h_max / cm)
             this.set("heat_max", h_max)
         end
+        
         if isnothing(cm)
             cm = p_at_h_max / h_max
             this.set("power_ratio", cm)
         end
+        
         if isnothing(cv)
             cv = (p_max - p_at_h_max) / h_max
             this.set("power_loss_ratio", cv)
@@ -163,6 +173,7 @@ functions:
         eta_p = nothing
         eta_cd = this.get("efficiency_condensing")
         eta_bp = this.get("efficiency_backpressure")
+        
         if !isnothing(eta_cd) && isnothing(eta_bp)
             eta_p = eta_cd
         elseif isnothing(eta_cd) && !isnothing(eta_bp)
