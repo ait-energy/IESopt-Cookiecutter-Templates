@@ -3,8 +3,8 @@ parameters:
   fuel: ~                           # fuel carrier
   fuel_from: ~                      # fuel input node
   power_to: ~                       # electricity output node
-  heat_to: ~                        # condensing only if nothing
-  co2_to: ~                         # no CO2 tracking if nothing
+  heat_to: ~                        # condensing only if not given
+  co2_to: ~                         # no CO2 tracking if not given
   fuel_co2_emission_factor: ~       # CO2 emission factor of the fuel
   power_max: ~                      # maximum electricity output
   heat_max: ~                       # maximum heat output
