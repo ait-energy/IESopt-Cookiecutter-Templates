@@ -55,8 +55,6 @@ components:
 functions:
   validate: |
     # TODO: A lot of additional validation checks.
-    # TODO:
-    __component__ = "foooobar"
 
     # Check mandatory parameters.
     @check !isnothing(this.get("mode"))
@@ -68,13 +66,13 @@ functions:
     @check this.get("mode") in ["extraction", "condensing", "backpressure"]
 
     # Check for non-negativity.
-    to_check = [
-        "power_min", "power_max", "heat_min", "heat_max", "power_at_heat_max", "power_ratio", "power_loss_ratio",
-        "efficiency_condensing", "efficiency_backpressure", "efficiency_condensing_min", "efficiency_backpressure_min",
-    ]
-    for param in to_check
-        @check isnothing(this.get(param)) || (this.get(param) >= 0)
-    end
+    @check isnothing(this.get("power_max")) || (this.get("power_max") >= 0)
+    @check isnothing(this.get("heat_max")) || (this.get("heat_max") >= 0)
+    @check isnothing(this.get("power_at_heat_max")) || (this.get("power_at_heat_max") >= 0)
+    @check isnothing(this.get("power_ratio")) || (this.get("power_ratio") >= 0)
+    @check isnothing(this.get("power_loss_ratio")) || (this.get("power_loss_ratio") >= 0)
+    @check isnothing(this.get("efficiency_condensing")) || (this.get("efficiency_condensing") >= 0)
+    @check isnothing(this.get("efficiency_backpressure")) || (this.get("efficiency_backpressure") >= 0)
     
     # Mode dependent checks.
     if this.get("mode") == "backpressure"
@@ -83,15 +81,12 @@ functions:
     elseif this.get("mode") == "condensing"
         @check isnothing(this.get("heat_to"))
         @check !isnothing(this.get("efficiency_condensing"))
-    else
+    elseif this.get("mode") == "extraction"
         @check !isnothing(this.get("heat_to"))
         @check !isnothing(this.get("efficiency_condensing")) || !isnothing(this.get("efficiency_backpressure"))
     end
 
   prepare: |
-    # TODO:
-    __component__ = "foooobar"
-
     cm = this.get("power_ratio")
     cv = this.get("power_loss_ratio")
 
@@ -174,8 +169,11 @@ functions:
             eta_p = eta_bp / (1.0 + cm)
         elseif !isnothing(eta_cd) && !isnothing(eta_bp)
             eta_p = eta_cd
-            # TODO: convert to check
-            @assert isapprox(eta_p, eta_bp / (1.0 + cm))
+            
+            @check isapprox(eta_cd, eta_bp / (1.0 + cm))
+            if !isapprox(eta_cd, eta_bp / (1.0 + cm))
+                @error "Falling back to condensing efficiency, to keep model running, but this error should be fixed!"
+            end
         end
         # -------------------------------------------------
 
