@@ -1,28 +1,28 @@
 parameters:
-  mode: ~
-  fuel: ~
-  fuel_co2_emission_factor: ~       # no CO2 tracking if nothing
-  fuel_from: ~
-  power_to: ~
+  mode: ~                           # operation mode: extraction, condensing, backpressure
+  fuel: ~                           # fuel carrier
+  fuel_from: ~                      # fuel input node
+  power_to: ~                       # electricity output node
   heat_to: ~                        # condensing only if nothing
   co2_to: ~                         # no CO2 tracking if nothing
-  power_min: 0
-  power_max: ~
-  heat_min: 0
-  heat_max: ~
-  power_at_heat_max: ~
-  power_ratio: 0.55
-  power_loss_ratio: 0.20
-  efficiency_condensing_min: ~
-  efficiency_condensing_max: ~
-  efficiency_backpressure_min: ~
-  efficiency_backpressure_max: ~
+  fuel_co2_emission_factor: ~       # CO2 emission factor of the fuel
+  power_max: ~                      # maximum electricity output
+  heat_max: ~                       # maximum heat output
+  power_at_heat_max: ~              # electricity output at maximum heat output
+  power_ratio: 0.55                 # electricity per heat in backpressure operation
+  power_loss_ratio: 0.20            # electricity lost per heat extracted along an isofuel line
+  efficiency_condensing: ~          # electricity per fuel
+  efficiency_backpressure: ~        # electricity+heat per fuel
+  # TODO:
+  # power_min: 0
+  # heat_min: 0
+  # efficiency_condensing_min: ~
+  # efficiency_backpressure_min: ~
   # availability: ~
   # availability_factor: ~
   # other missing parameters: ramping, specific unit commitment settings, etc.
-  _eta_h: ~
   _turbine_outputs: ~
-  _turbine_conversion_out: ~
+  _turbine_conversion: ~
 
 components:
   turbine:
@@ -45,7 +45,7 @@ components:
     enabled: <mode> == extraction
     carrier: electricity
   
-  aux_conn:
+  power:
     type: Connection
     enabled: <mode> == extraction
     node_from: <self>.aux_node
@@ -54,38 +54,159 @@ components:
 
 functions:
   validate: |
+    # TODO: A lot of additional validation checks.
+    # TODO:
+    __component__ = "foooobar"
+
     # Check mandatory parameters.
-    to_check = ["mode", "fuel", "fuel_from", "power_to"]
-    for param in to_check
-        @check !isnothing(this.get(param)), "Parameter `$(param)` is mandatory"
-    end
+    @check !isnothing(this.get("mode"))
+    @check !isnothing(this.get("fuel"))
+    @check !isnothing(this.get("fuel_from"))
+    @check !isnothing(this.get("power_to"))
 
     # Check mode.
-    @check this.get("mode") in ["extraction", "condensing", "backpressure"], "Invalid `mode`: $(this.get("mode"))"
+    @check this.get("mode") in ["extraction", "condensing", "backpressure"]
 
     # Check for non-negativity.
     to_check = [
         "power_min", "power_max", "heat_min", "heat_max", "power_at_heat_max", "power_ratio", "power_loss_ratio",
-        "efficiency_condensing_min", "efficiency_condensing_max", "efficiency_backpressure_min",
-        "efficiency_backpressure_max",
+        "efficiency_condensing", "efficiency_backpressure", "efficiency_condensing_min", "efficiency_backpressure_min",
     ]
     for param in to_check
-        @check isnothing(param) || (this.get(param) >= 0), "Parameter `$(param)` must be non-negative"
+        @check isnothing(this.get(param)) || (this.get(param) >= 0)
     end
     
     # Mode dependent checks.
     if this.get("mode") == "backpressure"
-        @check !isnothing(this.get("heat_to")), "Parameter `heat_to` is mandatory for backpressure mode"
+        @check !isnothing(this.get("heat_to"))
+        @check !isnothing(this.get("efficiency_backpressure"))
     elseif this.get("mode") == "condensing"
-        @check isnothing(this.get("heat_to")), "Parameter `heat_to` cannot be set for condensing mode"
+        @check isnothing(this.get("heat_to"))
+        @check !isnothing(this.get("efficiency_condensing"))
     else
-        @check !isnothing(this.get("heat_to")), "Parameter `heat_to` is mandatory for extraction mode"
+        @check !isnothing(this.get("heat_to"))
+        @check !isnothing(this.get("efficiency_condensing")) || !isnothing(this.get("efficiency_backpressure"))
     end
 
   prepare: |
-    nothing
+    # TODO:
+    __component__ = "foooobar"
+
+    cm = this.get("power_ratio")
+    cv = this.get("power_loss_ratio")
+
+    fuel = this.get("fuel")
+    to_p = this.get("power_to")
+    to_co2 = this.get("co2_to")
+
+    if this.get("mode") == "backpressure"
+        to_h = this.get("heat_to")
+
+        # -------------------------------------------------
+        # Prepare: power_max, heat_max, power_ratio
+        # -------------------------------------------------
+        p_max = this.get("power_max")
+        h_max = this.get("heat_max")
+        cm = this.get("power_ratio")
+        if isnothing(p_max)
+            power_max = cm * h_max
+            this.set("power_max", power_max)
+        end
+        if isnothing(h_max)
+            # Currently, nothing to do here (`h_max` is not actively used in backpressure mode).
+        end
+        if isnothing(cm)
+            cm = p_max / h_max
+            this.set("power_ratio", cm)
+        end
+        # -------------------------------------------------
+
+        # -------------------------------------------------
+        # Prepare: eta_p, eta_h
+        # -------------------------------------------------
+        eta = this.get("efficiency_backpressure")
+        eta_h = eta / (1.0 + cm)
+        eta_p = cm * eta_h
+        # -------------------------------------------------
+
+        this.set("_turbine_outputs", "{electricity: $(to_p), heat: $(to_h)}")
+        this.set("_turbine_conversion", "1 $(fuel) -> $(eta_p) electricity + $(eta_h) heat")
+    elseif this.get("mode") == "condensing"
+        eta_p = this.get("efficiency_condensing")
+        this.set("_turbine_outputs", "{electricity: $(to_p)}")
+        this.set("_turbine_conversion", "1 $(fuel) -> $(eta_p) electricity")
+    elseif this.get("mode") == "extraction"
+        # -------------------------------------------------
+        # Prepare: power_max, heat_max, power_ratio, power_loss_ratio
+        # -------------------------------------------------
+        p_max = this.get("power_max")
+        h_max = this.get("heat_max")
+        p_at_h_max = this.get("power_at_heat_max")
+        cm = this.get("power_ratio")
+        cv = this.get("power_loss_ratio")
+        if isnothing(p_max)
+            p_max = isnothing(p_at_h_max) ? (cm * h_max + cv * h_max) : (p_at_h_max + cv * h_max)
+            this.set("power_max", p_max)
+        end
+        if isnothing(h_max)
+            h_max = isnothing(p_at_h_max) ? (p_max / (cm + cv)) : (p_at_h_max / cm)
+            this.set("heat_max", h_max)
+        end
+        if isnothing(cm)
+            cm = p_at_h_max / h_max
+            this.set("power_ratio", cm)
+        end
+        if isnothing(cv)
+            cv = (p_max - p_at_h_max) / h_max
+            this.set("power_loss_ratio", cv)
+        end
+        # -------------------------------------------------
+
+        # -------------------------------------------------
+        # Prepare: eta_p
+        # -------------------------------------------------
+        eta_p = nothing
+        eta_cd = this.get("efficiency_condensing")
+        eta_bp = this.get("efficiency_backpressure")
+        if !isnothing(eta_cd) && isnothing(eta_bp)
+            eta_p = eta_cd
+        elseif isnothing(eta_cd) && !isnothing(eta_bp)
+            eta_p = eta_bp / (1.0 + cm)
+        elseif !isnothing(eta_cd) && !isnothing(eta_bp)
+            eta_p = eta_cd
+            # TODO: convert to check
+            @assert isapprox(eta_p, eta_bp / (1.0 + cm))
+        end
+        # -------------------------------------------------
+
+        aux_node = "$(this.get("self")).aux_node"
+        this.set("_turbine_outputs", "{electricity: $(aux_node)}")
+        this.set("_turbine_conversion", "1 $(fuel) -> $(eta_p) electricity")
+    end
+
+    if !isnothing(to_co2)
+        t_out = this.get("_turbine_outputs")
+        t_conv = this.get("_turbine_conversion")
+        ef = this.get("fuel_co2_emission_factor")
+
+        this.set("_turbine_outputs", "$(t_out[1:end-1]), co2: $(to_co2)}")
+        this.set("_turbine_conversion", "$(t_conv) + $(ef) co2")
+    end
   
   finalize: |
-    this.exp.out_electricity = 0  # TODO
-    this.exp.out_heat = 0  # TODO
-    this.exp.out_co2 = 0  # TODO
+    if this.get("mode") == "backpressure"
+        this.exp.out_electricity = this.turbine.exp.out_electricity
+        this.exp.out_heat = this.turbine.exp.out_heat
+    elseif this.get("mode") == "condensing"
+        this.exp.out_electricity = this.turbine.exp.out_electricity
+    elseif this.get("mode") == "extraction"
+        this.exp.out_electricity = this.power.exp.out
+        this.exp.out_heat = this.heat.exp.out_heat
+
+        # Construct the lower-bound / backpressure constraint.
+        JuMP.@constraint(this.model, this.exp.out_electricity .>= this.get("power_ratio") .* this.exp.out_heat)
+    end
+
+    if !isnothing(this.get("co2_to"))
+        this.exp.out_co2 = this.turbine.exp.out_co2
+    end
