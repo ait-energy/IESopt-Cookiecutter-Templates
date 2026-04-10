@@ -1,6 +1,8 @@
 import subprocess
 
 if __name__ == "__main__":
+    # fix for Open_SSL version conflict (installing specific python version before uv)
+    subprocess.run(["uv", "python", "install", "{{ cookiecutter.python_version }}", "--managed-python"])
     iesopt_version = "{{ cookiecutter.iesopt_version }}"
     # init and sync uv
     iesopt = "iesopt" if iesopt_version == "latest" else "iesopt==" + iesopt_version

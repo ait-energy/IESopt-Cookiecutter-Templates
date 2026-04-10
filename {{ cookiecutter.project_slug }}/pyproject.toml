@@ -4,5 +4,8 @@ version = "0.1.0"
 description = "{{ cookiecutter.short_description }}"
 authors = ["{{ cookiecutter.author }}"]
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">={{ cookiecutter.python_version }}"
 dependencies = []
+
+[tool.uv]
+python-preference = "only-managed"
