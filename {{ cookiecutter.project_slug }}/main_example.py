@@ -1,8 +1,11 @@
 import iesopt
 
 
+# Fetch the example
+config_file = iesopt.make_example("01_basic_single_node", dst_dir="example")
+
 # Parse, build, and solve the model.
-model = iesopt.run("opt/config.iesopt.yaml")
+model = iesopt.run(config_file)
 
 # Get the results as a pandas DataFrame.
 df = model.results.to_pandas()

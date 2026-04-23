@@ -1,6 +1,8 @@
 import subprocess
 
 if __name__ == "__main__":
+    # fix for Open_SSL version conflict (installing specific python version before uv)
+    subprocess.run(["uv", "python", "install", "{{ cookiecutter.python_version }}", "--managed-python"])
     iesopt_version = "{{ cookiecutter.iesopt_version }}"
     # init and sync uv
     iesopt = "iesopt" if iesopt_version == "latest" else "iesopt==" + iesopt_version
@@ -14,8 +16,9 @@ if __name__ == "__main__":
         ["git", "commit", "--message", "chore(cookiecutter): initial commit", "--quiet"]
     )
     # add pre-commit and iesopt dependencies
-    subprocess.run(["uv", "tool", "install", "pre-commit", "--with", "pre-commit-uv"])
-    subprocess.run(["uv", "tool", "run", "pre-commit", "install"])
+    # subprocess.run(["uv", "tool", "install", "pre-commit", "--with", "pre-commit-uv"])
+    subprocess.run(["uv", "pip", "install", "pre-commit"])
+    subprocess.run(["uv", "run", "pre-commit", "install"])
     subprocess.run(["uv", "run", "python", "-c", "import iesopt"])
     subprocess.run(["git", "add", "."])
     subprocess.run(

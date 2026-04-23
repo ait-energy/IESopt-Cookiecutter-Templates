@@ -1,3 +1,6 @@
+{% set active_addons = cookiecutter.add_addons.split(',') | map('trim') | list %}
+{% set active_templates = cookiecutter.add_templates.split(',') | map('trim') | list %}
+
 # ::: -------------------------------------------------------------------- ::: #
 # ::: >>> SECTION | MAIN CONFIGURATION <<<                                 ::: #
 # ::: -------------------------------------------------------------------- ::: #
@@ -36,6 +39,13 @@ config:
 carriers:
   electricity: {}
 
+{% if cookiecutter.add_addons != 'none' %}
+addons:
+  {% if 'heat' in active_addons %}
+  MyHeatAddon: {}
+  MyHeatAddon2: {}
+  {% endif %}
+{% endif %}
 # ::: -------------------------------------------------------------------- ::: #
 # ::: >>> SECTION | MODEL COMPONENTS <<<                                   ::: #
 # ::: -------------------------------------------------------------------- ::: #

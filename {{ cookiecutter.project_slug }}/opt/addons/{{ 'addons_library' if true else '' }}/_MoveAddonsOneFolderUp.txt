@@ -1,0 +1,1 @@
+To use the addons, move them one folder up, directly into "addons".
