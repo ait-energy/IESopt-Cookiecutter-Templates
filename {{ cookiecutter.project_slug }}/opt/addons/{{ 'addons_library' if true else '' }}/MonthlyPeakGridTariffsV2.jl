@@ -5,7 +5,7 @@ using JuMP
 using IESopt
 
 
-# Add on to relfect power component of grid tariffs (could be gas or electricity). This is the price paid for 
+# Add on to reflect power component of grid tariffs (could be gas or electricity). This is the price paid for 
 # the peak power consumed each month.
 
 # Necessary
@@ -27,8 +27,6 @@ using IESopt
 
 # Tips
 # - Check out example 18_addons.iesopt.yaml for the use of addons and variables for addons
-# - The creation of the monthly decision variables can be done efficiently by using a csv file. Check out example 
-#   09_csv_only_iesop.yaml for how to load components in a csv file
 
 
 function initialize!(model, config)
