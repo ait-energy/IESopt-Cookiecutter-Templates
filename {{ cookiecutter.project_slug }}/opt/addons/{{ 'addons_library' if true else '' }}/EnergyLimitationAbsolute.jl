@@ -4,11 +4,13 @@ module EnergyLimitationAbsolute
 
 # Necessary: 
 # - loading the add on in the config, and providing the maximum output limit and relevant profile name
-#       addons: {EnergyLimitationAbsolute: {max_value: 10000, proflie_name: "buy_biomethane"}}
+#       addons: {EnergyLimitationAbsolute: {max_value: 10000, profile_name: "buy_biomethane"}}
 
 # Comments:
 # - This add on is applied to the example of limitting the output of a create profile called 'buy biomethane' which 
 #   represents the biomethane market to 10000 energy units (i.e. MWh), but can be addapted to other applications.
+# - Note this can also be achieved by creating a stateful node rather than a create profile with an initial state 
+#   equal to the maximum output limit
 
 # Tips:
 # - check out example 18_addons.iesopt.yaml for the use of addons and variables for addons
@@ -21,14 +23,14 @@ function initialize!(model, config)
 end
 
 function construct_constraints!(model, config)
-    # Get sum of biomethane bought
+    # Get sum of profile output
     T = get_T(model)
     snapshots = internal(model).model.snapshots
-    relevant_profile = get_component(model, config["proflie_name"])
+    profile_to_limit = get_component(model, config["profile_name"])
     
-    total_output = sum(relevant_profile.exp.value[t]*snapshots[t].weight for t in T) 
+    total_output = sum(profile_to_limit.exp.value[t]*snapshots[t].weight for t in T) 
 
-    # Limit biomethane use to an absolute value
+    # Limit profile output to an absolute value
     JuMP.@constraint(
         model,
         total_output <= config["max_value"])
