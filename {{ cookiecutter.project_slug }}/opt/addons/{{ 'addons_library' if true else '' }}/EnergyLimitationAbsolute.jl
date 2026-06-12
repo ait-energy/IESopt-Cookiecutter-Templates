@@ -9,8 +9,8 @@ module EnergyLimitationAbsolute
 # Comments:
 # - This addon is applied to the example of limiting the aggregated output of a create-profile called 'buy biomethane' which 
 #   represents the biomethane market to 10000 energy units (i.e. MWh), but can be adapted to other applications.
-# - Note this can also be achieved by creating a stateful node rather than a create profile with an initial state 
-#   equal to the maximum output limit
+# - Note this can also be achieved by creating a stateful node with an initial state 
+#   equal to the maximum output limit rather than a create profile 
 
 # Tips:
 # - check out example 18_addons.iesopt.yaml for the use of addons and variables for addons
