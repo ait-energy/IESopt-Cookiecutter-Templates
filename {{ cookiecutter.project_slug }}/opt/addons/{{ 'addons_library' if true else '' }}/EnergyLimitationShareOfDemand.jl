@@ -1,7 +1,7 @@
 module EnergyLimitationShareOfDemand
 
 # Limit the output of units tagged with the provided tag to a maximum share of the total heat demand.
-# Here it is applied to the example of limitting heat output from components with biomass as a fuels source.
+# Here it is applied to the example of limiting heat output from components with biomass as a fuels source.
 
 # Necessary: 
 # - loading the add on in the config, and providing the maximum output limit
