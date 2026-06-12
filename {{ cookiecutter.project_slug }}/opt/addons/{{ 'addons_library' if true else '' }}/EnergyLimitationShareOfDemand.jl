@@ -7,7 +7,7 @@ module EnergyLimitationShareOfDemand
 # - loading the addon in the config, and providing the maximum output limit
 #       addons: {EnergyLimitationShareOfDemand: {max_share: 0.5, tag: "Biomass"}}
 # - tagging all components that are being targeted with a common tag, e.g. "Biomass"
-# - the model assumes the use of templates with heat output units and profiles labelled 'unit' (see those in invest folder)
+# - the model assumes the use of templates with heat output units and profiles labeled 'unit' (see those in invest folder)
 
 # Tips:
 # - check out example 18_addons.iesopt.yaml for the use of addons and variables for addons
