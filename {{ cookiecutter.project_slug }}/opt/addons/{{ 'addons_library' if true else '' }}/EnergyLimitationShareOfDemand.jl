@@ -4,7 +4,7 @@ module EnergyLimitationShareOfDemand
 # Here it is applied to the example of limiting heat output from components with biomass as a fuels source.
 
 # Necessary: 
-# - loading the add on in the config, and providing the maximum output limit
+# - loading the addon in the config, and providing the maximum output limit
 #       addons: {EnergyLimitationShareOfDemand: {max_share: 0.5, tag: "Biomass"}}
 # - tagging all components that are being targetted with a common tag, e.g. "Biomass"
 # - the model assumes the use of templates with heat output units and profiles labelled 'unit' (see those in invest folder)
