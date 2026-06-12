@@ -12,7 +12,7 @@ module EnergyLimitationAbsolute
 # - Note this can also be achieved by creating a stateful node with an initial state 
 #   equal to the maximum output limit rather than a create profile 
 
-# Tips:
+# Tips
 # - check out example 18_addons.iesopt.yaml for the use of addons and variables for addons
 
 using JuMP

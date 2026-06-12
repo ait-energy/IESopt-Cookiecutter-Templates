@@ -4,15 +4,15 @@ using JuMP
 using IESopt
 
 
-# Reduce the time resolution of the on/off decisions for the specified components 
+# Reduce the time resolution of the on/off decisions (min_on_time, min_off_time) for the specified units 
 
 # Necessary
-# - Loading the addon in the config and specify a list of the compoenents to which it should be applied to and the new 
+# - Loading the addon in the config and specify a list of the components to which it should be applied to and the new 
 #   timescale for the on/off decisions 
 #       addons: {ReduceUCtime: {components: [component1, component2], timescale: 24}}
 
 # Comments
-# - This add on is useful when you have exceptionally long minimum on times, then the decision can be made once a day rather than every hour for example.
+# - This addon is useful when you have exceptionally long minimum on times, then the decision can be made e.g., once a day, rather than every time step.
 
 # Tips
 # - Check out example 18_addons.iesopt.yaml for the use of addons and variables for addons

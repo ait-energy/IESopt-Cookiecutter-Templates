@@ -2,8 +2,8 @@ module SharedArea
 
 # Limit the combined area of installed PV and solar thermal installations to the maximum roof area.
 
-# Necessary: 
-# - loading the add on in the config
+# Necessary 
+# - loading the addon in the config
 #       addons: {shared_area: {}}
 # - defining decision components for PV and solar thermal area
 # - defining maximum roof area in the input parameters
