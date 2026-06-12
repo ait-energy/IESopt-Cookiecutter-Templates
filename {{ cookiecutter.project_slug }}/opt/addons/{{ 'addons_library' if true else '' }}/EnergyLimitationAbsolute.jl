@@ -3,7 +3,7 @@ module EnergyLimitationAbsolute
 # Limit the aggregated output of a create-profile to a maximum value
 
 # Necessary: 
-# - loading the add on in the config, and providing the maximum output limit and relevant profile name
+# - loading the addon in the config, and providing the maximum output limit and relevant profile name
 #       addons: {EnergyLimitationAbsolute: {max_value: 10000, profile_name: "buy_biomethane"}}
 
 # Comments:
