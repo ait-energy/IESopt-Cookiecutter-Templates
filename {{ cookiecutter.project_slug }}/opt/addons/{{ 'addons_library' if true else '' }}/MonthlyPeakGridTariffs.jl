@@ -27,6 +27,21 @@ using Dates
 import JuMP
 
 function initialize!(model::JuMP.Model, config::Dict)
+    if !haskey(config, "year")
+        @error "[IESoptAddon_MonthlyPeakGridTariffs] Missing <year> parameter"
+        return false
+    end
+
+    if config["year"] < 1950 || config["year"] > 2500
+        @error "[IESoptAddon_MonthlyPeakGridTariffs] Please check input for <year> parameter"
+        return false
+    end
+
+    if !haskey(config, "consumption_connection")
+        @error "[IESoptAddon_MonthlyPeakGridTariffs] Missing <consumption_connection> parameter"
+        return false
+    end
+
     return true
 end
 
