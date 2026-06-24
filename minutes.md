@@ -4,7 +4,7 @@
 
 ## IESopt project template
 #### Goal
-> Create an IESopt project template which allows for easy initialization and set up of a new IESopt project through. This template should include for example the default folder structure, uv environment set up, and the option to also have example config files and templates.
+> Create an IESopt project template which allows for easy initialization and set up of a new IESopt project. This template should include for example the default folder structure, uv environment set up, and the option to also have example config files and templates.
 
 #### Discussion outcomes on requirements/wishlist for project template
 - Python environment which installs: iesopt, pandas, numpy, visualization package (matplotlib or plotly), a code formatter
@@ -41,7 +41,7 @@
     - power (describes existing power)
     - power_lb (lower bound for investment)
     - power_ub (upper bound for investment)
-    - (for something like CO2 or water, thien it is custom -- if power doesn't fit right, then donÄt use it)
+    - (for something like CO2 or water, thien it is custom -- if power doesn't fit right, then don't use it)
 - For connecting nodes: 
     - fuel_from, heat_to
     - follows IESopt syntax (ex. node_from, node_to) but specifies which energy carrier which is useful for example if you have more than one input/output
